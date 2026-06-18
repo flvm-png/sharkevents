@@ -17,6 +17,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
+    "react-qr-code": "^2.2.0",
     "slugify": "^1.6.9",
     "uuid": "^14.0.0",
     "zod": "^4.4.3"
