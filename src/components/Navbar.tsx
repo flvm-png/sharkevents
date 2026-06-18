@@ -51,12 +51,19 @@ export default function Navbar() {
         {/* NAV */}
         <nav className="flex items-center gap-5 text-sm text-zinc-300">
 
-          <Link
-            href="/"
-            className="hover:text-white transition"
-          >
+          <Link href="/" className="hover:text-white transition">
             Eventos
           </Link>
+
+          {/* NEW: Create Event */}
+          {user && (
+            <Link
+              href="/create"
+              className="hover:text-white transition"
+            >
+              Criar Evento
+            </Link>
+          )}
 
           {user ? (
             <>
