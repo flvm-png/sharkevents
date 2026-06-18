@@ -12,20 +12,20 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // estado inicial do user
+    // obter user inicial
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
     });
 
-    // listener para login/logout em tempo real
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
+    // listener login/logout
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -45,33 +45,23 @@ export default function Navbar() {
           href="/"
           className="text-white font-bold text-xl tracking-tight"
         >
-          SharkEvents
+          🦈 SharkEvents
         </Link>
 
         {/* NAV */}
         <nav className="flex items-center gap-5 text-sm text-zinc-300">
 
-          <Link href="/" className="hover:text-white transition">
-            Eventos
-          </Link>
-
-          {/* NEW: Create Event */}
+          {/* Eventos só com login */}
           {user && (
-            <Link
-              href="/create"
-              className="hover:text-white transition"
-            >
-              Criar Evento
+            <Link href="/events" className="hover:text-white transition">
+              Eventos
             </Link>
           )}
 
           {user ? (
             <>
-              <Link
-                href="/dashboard"
-                className="hover:text-white transition"
-              >
-                Dashboard
+              <Link href="/create" className="hover:text-white transition">
+                Criar Evento
               </Link>
 
               <button
@@ -83,17 +73,11 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="hover:text-white transition"
-              >
+              <Link href="/login" className="hover:text-white transition">
                 Login
               </Link>
 
-              <Link
-                href="/register"
-                className="hover:text-white transition"
-              >
+              <Link href="/register" className="hover:text-white transition">
                 Registo
               </Link>
             </>

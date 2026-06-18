@@ -1,28 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import DeleteEventButton from "./DeleteEventButton";
 
-export default function EventDetail({ params }: any) {
+export default function EventDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+
   const supabase = createClient();
 
-  const [id, setId] = useState<string | null>(null);
   const [event, setEvent] = useState<any>(null);
   const [registrations, setRegistrations] = useState<any[]>([]);
-
-  // 🔥 resolver params (Next 16)
-  useEffect(() => {
-    async function resolveParams() {
-      const resolved = await params;
-      setId(resolved.id);
-    }
-
-    resolveParams();
-  }, [params]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
-
     async function load() {
       const { data: eventData } = await supabase
         .from("events")
@@ -37,23 +33,58 @@ export default function EventDetail({ params }: any) {
 
       setEvent(eventData);
       setRegistrations(regs ?? []);
+      setLoading(false);
     }
 
     load();
   }, [id]);
 
-  if (!event) {
+  if (loading) {
     return (
-      <div className="text-white p-10">
-        Loading event...
+      <div className="max-w-4xl mx-auto px-4 py-10 text-white">
+        A carregar evento...
       </div>
     );
   }
 
-  const checkedIn = registrations.filter((r) => r.checked_in).length;
+  if (!event) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 text-white">
+        Evento não encontrado.
+      </div>
+    );
+  }
+
+  const checkedInCount = registrations.filter(
+    (r) => r.checked_in
+  ).length;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 text-white">
+
+      {/* AÇÕES */}
+
+      <div className="flex items-center justify-between mb-8">
+
+        <Link
+          href="/dashboard"
+          className="
+            px-4 py-2
+            rounded-lg
+            border border-white/10
+            bg-zinc-900
+            hover:bg-zinc-800
+            transition
+          "
+        >
+          ← Voltar
+        </Link>
+
+        <DeleteEventButton eventId={event.id} />
+
+      </div>
+
+      {/* EVENTO */}
 
       <h1 className="text-3xl font-bold mb-2">
         {event.title}
@@ -63,38 +94,123 @@ export default function EventDetail({ params }: any) {
         {event.description}
       </p>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-zinc-900 p-4 rounded-lg">
-          Inscritos: {registrations.length}
-        </div>
+      <div className="flex flex-wrap gap-2 mb-8 text-sm">
 
-        <div className="bg-zinc-900 p-4 rounded-lg text-green-400">
-          Check-ins: {checkedIn}
-        </div>
+        <span className="rounded-full border border-white/10 bg-zinc-900 px-3 py-1">
+          📍 {event.location || "Sem local"}
+        </span>
 
-        <div className="bg-zinc-900 p-4 rounded-lg">
-          Capacidade: {event.capacity}
-        </div>
+        <span className="rounded-full border border-white/10 bg-zinc-900 px-3 py-1">
+          📅{" "}
+          {new Date(event.date).toLocaleDateString()}
+        </span>
+
       </div>
 
-      <h2 className="text-xl font-semibold mb-3">
-        Inscritos
+      {/* STATS */}
+
+      <div className="grid md:grid-cols-3 gap-4 mb-8">
+
+        <div className="bg-zinc-900 border border-white/10 rounded-lg p-4">
+          <p className="text-zinc-400 text-sm">
+            Inscritos
+          </p>
+
+          <p className="text-3xl font-bold mt-1">
+            {registrations.length}
+          </p>
+        </div>
+
+        <div className="bg-zinc-900 border border-white/10 rounded-lg p-4">
+          <p className="text-zinc-400 text-sm">
+            Check-ins
+          </p>
+
+          <p className="text-3xl font-bold text-green-400 mt-1">
+            {checkedInCount}
+          </p>
+        </div>
+
+        <div className="bg-zinc-900 border border-white/10 rounded-lg p-4">
+          <p className="text-zinc-400 text-sm">
+            Capacidade
+          </p>
+
+          <p className="text-3xl font-bold mt-1">
+            {event.capacity}
+          </p>
+        </div>
+
+      </div>
+
+      {/* INSCRITOS */}
+
+      <h2 className="text-xl font-semibold mb-4">
+        Lista de Inscritos
       </h2>
 
-      <div className="space-y-2">
-        {registrations.map((r) => (
-          <div
-            key={r.id}
-            className="bg-zinc-900 p-3 rounded-lg flex justify-between"
-          >
-            <span>{r.user_id}</span>
+      {registrations.length === 0 ? (
+        <div className="
+          bg-zinc-900
+          border border-white/10
+          rounded-lg
+          p-4
+          text-zinc-400
+        ">
+          Ainda não existem inscrições.
+        </div>
+      ) : (
+        <div className="space-y-2">
 
-            <span className={r.checked_in ? "text-green-400" : "text-zinc-500"}>
-              {r.checked_in ? "Checked-in" : "Pendente"}
-            </span>
-          </div>
-        ))}
-      </div>
+          {registrations.map((registration) => (
+
+            <div
+              key={registration.id}
+              className="
+                bg-zinc-900
+                border border-white/10
+                rounded-lg
+                p-4
+                flex
+                items-center
+                justify-between
+              "
+            >
+
+              <div>
+                <p className="font-medium">
+                  {registration.user_id}
+                </p>
+              </div>
+
+              <div>
+
+                {registration.checked_in ? (
+                  <span className="
+                    text-green-400
+                    text-sm
+                    font-medium
+                  ">
+                    ✅ Checked-in
+                  </span>
+                ) : (
+                  <span className="
+                    text-zinc-500
+                    text-sm
+                  ">
+                    ⏳ Pendente
+                  </span>
+                )}
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+      )}
+
     </div>
   );
 }
