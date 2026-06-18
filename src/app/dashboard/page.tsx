@@ -1,22 +1,38 @@
-import { getUser } from "@/lib/supabase/getUser";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function Dashboard() {
-  const user = await getUser();
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+export default function DashboardPage() {
+  const supabase = createClient();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setLoading(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <div className="text-white">A carregar...</div>;
 
   if (!user) {
-    redirect("/login");
+    return <div className="text-white">Não autenticado</div>;
   }
 
   return (
-    <div className="text-white space-y-4">
-      <h1 className="text-2xl font-bold">
-        Bem-vindo ao Dashboard 👋
-      </h1>
-
-      <p className="text-zinc-300">
-        Email: {user.email}
-      </p>
+    <div className="text-white">
+      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <p className="mt-4">Bem vindo, {user.email} 👋</p>
     </div>
   );
 }

@@ -34,14 +34,14 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto mt-10">
       <h1 className="text-3xl font-semibold text-white mb-6">
-        Criar Conta
+        Registo
       </h1>
 
       <div className="space-y-4">
         <input
           type="email"
           placeholder="Email"
-          className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/10"
+          className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-white"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -49,7 +49,7 @@ export default function RegisterPage() {
         <input
           type="password"
           placeholder="Password"
-          className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/10"
+          className="w-full rounded-lg bg-zinc-900 border border-white/10 px-3 py-2 text-white"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -57,9 +57,9 @@ export default function RegisterPage() {
         <button
           onClick={handleRegister}
           disabled={loading}
-          className="w-full rounded-lg bg-white text-zinc-900 font-medium py-2 hover:bg-zinc-200 transition disabled:opacity-50"
+          className="w-full rounded-lg bg-white text-zinc-900 font-medium py-2"
         >
-          {loading ? "A criar..." : "Criar Conta"}
+          {loading ? "A criar..." : "Criar conta"}
         </button>
       </div>
     </div>

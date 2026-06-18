@@ -1,21 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { NextResponse, type NextRequest } from "next/server";
 
-export function createClient() {
-  const cookieStore = cookies();
-
+export function createClient(request?: NextRequest) {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => cookieStore.getAll?.() ?? [],
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            try {
-              cookieStore.set(name, value, options);
-            } catch {}
-          });
+        getAll() {
+          if (!request) return [];
+          return request.cookies.getAll();
+        },
+
+        setAll(cookiesToSet) {
+          // só funciona em middleware / route handlers
         },
       },
     }
