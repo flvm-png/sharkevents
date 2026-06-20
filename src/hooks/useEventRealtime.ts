@@ -3,34 +3,31 @@
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function useEventRealtime(onChange: (payload: any) => void) {
+export function useEventRealtime(
+  eventId: string,
+  callback: (payload: any) => void
+) {
   useEffect(() => {
     const supabase = createClient();
 
     const channel = supabase
-      .channel("event-live-channel")
+      .channel(`event-${eventId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "check_ins",
+          table: "events",
+          filter: `id=eq.${eventId}`,
         },
-        (payload) => onChange(payload)
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "registrations",
-        },
-        (payload) => onChange(payload)
+        (payload) => {
+          callback(payload);
+        }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [onChange]);
+  }, [eventId, callback]);
 }

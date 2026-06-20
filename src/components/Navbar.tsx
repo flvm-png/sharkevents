@@ -1,83 +1,94 @@
 "use client";
 
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // obter user inicial
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
     });
 
-    // listener login/logout
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
 
     return () => {
-      subscription.unsubscribe();
+      listener.subscription.unsubscribe();
     };
   }, []);
 
   async function logout() {
     await supabase.auth.signOut();
     setUser(null);
-    router.push("/");
+    router.push("/login");
     router.refresh();
   }
+
+  // helper para active link
+  function isActive(path: string) {
+    return pathname === path;
+  }
+
+  const linkClass = (path: string) =>
+    `transition ${
+      isActive(path)
+        ? "text-white font-semibold"
+        : "text-zinc-400 hover:text-white"
+    }`;
 
   return (
     <header className="bg-zinc-950 border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
 
         {/* LOGO */}
-        <Link
-          href="/"
-          className="text-white font-bold text-xl tracking-tight"
-        >
-          🦈 SharkEvents
+        <Link href="/" className="text-white font-bold text-xl">
+          SharkEvents
         </Link>
 
         {/* NAV */}
-        <nav className="flex items-center gap-5 text-sm text-zinc-300">
+        <nav className="flex items-center gap-5 text-sm">
 
-          {/* Eventos só com login */}
-          {user && (
-            <Link href="/events" className="hover:text-white transition">
-              Eventos
-            </Link>
-          )}
+          {/* PUBLIC */}
+          <Link href="/events" className={linkClass("/events")}>
+            Eventos
+          </Link>
 
+          {/* AUTH */}
           {user ? (
             <>
-              <Link href="/create" className="hover:text-white transition">
+              <Link href="/dashboard" className={linkClass("/dashboard")}>
+                Dashboard
+              </Link>
+
+              <Link href="/create" className={linkClass("/create")}>
                 Criar Evento
               </Link>
 
               <button
                 onClick={logout}
-                className="text-zinc-300 hover:text-white transition"
+                className="text-red-400 hover:text-red-300 transition"
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="hover:text-white transition">
+              <Link href="/login" className={linkClass("/login")}>
                 Login
               </Link>
 
-              <Link href="/register" className="hover:text-white transition">
+              <Link href="/register" className={linkClass("/register")}>
                 Registo
               </Link>
             </>

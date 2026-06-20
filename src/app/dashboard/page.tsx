@@ -24,7 +24,6 @@ export default function DashboardPage() {
       }
 
       // EVENTOS ONDE ESTOU INSCRITO
-
       const { data: registrations } = await supabase
         .from("event_registrations")
         .select(`
@@ -41,14 +40,11 @@ export default function DashboardPage() {
         .eq("user_id", user.id);
 
       const registered =
-        registrations
-          ?.map((r: any) => r.events)
-          .filter(Boolean) ?? [];
+        registrations?.map((r: any) => r.events).filter(Boolean) ?? [];
 
       setRegisteredEvents(registered);
 
       // EVENTOS QUE CRIEI
-
       const { data: createdEvents } = await supabase
         .from("events")
         .select("*")
@@ -77,7 +73,6 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto px-4 py-10 text-white">
 
       {/* DASHBOARD USER */}
-
       <section className="mb-12">
         <h1 className="text-3xl font-bold mb-2">
           Dashboard
@@ -121,7 +116,6 @@ export default function DashboardPage() {
       </section>
 
       {/* FERRAMENTAS ORGANIZADOR */}
-
       <section>
         <h1 className="text-3xl font-bold mb-2">
           Ferramentas do Organizador
@@ -138,14 +132,26 @@ export default function DashboardPage() {
         ) : (
           <div className="grid gap-4">
             {organizedEvents.map((event) => (
-              <EventAdminCard
-                key={event.id}
-                event={event}
-              />
+              <div key={event.id} className="space-y-2">
+
+                <EventAdminCard event={event} />
+
+                {/* BOTÃO EXPORT CSV (SÓ ORGANIZADOR) */}
+                <div className="flex gap-3">
+                  <a
+                    href={`/api/events/${event.id}/export`}
+                    className="px-3 py-2 bg-white text-black rounded-lg hover:bg-zinc-200 transition text-sm"
+                  >
+                    Export CSV
+                  </a>
+                </div>
+
+              </div>
             ))}
           </div>
         )}
       </section>
+
     </div>
   );
 }

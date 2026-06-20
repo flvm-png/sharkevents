@@ -1,154 +1,117 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import CheckInQRCode from "@/app/events/[slug]/CheckInQRCode";
 
 export default function RegisterButton({
   eventId,
+  capacity,
+  onChange,
 }: {
   eventId: string;
+  capacity: number;
+  onChange?: (val: boolean) => void;
 }) {
   const supabase = createClient();
-  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [capacity, setCapacity] = useState<number>(0);
-  const [registeredCount, setRegisteredCount] = useState<number>(0);
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
-  const isFull = capacity > 0 && registeredCount >= capacity;
-  const isBlocked = !isRegistered && isFull;
-
+  // 🔥 load initial state
   useEffect(() => {
-    async function loadData() {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
+    async function load() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      const { data: event } = await supabase
-        .from("events")
-        .select("capacity, registered_count")
-        .eq("id", eventId)
-        .single();
+      if (!user) return;
 
-      if (event) {
-        setCapacity(event.capacity ?? 0);
-        setRegisteredCount(event.registered_count ?? 0);
-      }
+      const res = await fetch(
+        `/api/events/${eventId}/status?userId=${user.id}`
+      );
 
-      if (user) {
-        const { data: reg } = await supabase
-          .from("event_registrations")
-          .select("id")
-          .eq("event_id", eventId)
-          .eq("user_id", user.id)
-          .maybeSingle();
+      const data = await res.json();
 
-        setIsRegistered(!!reg);
-      }
+      setRegistered(!!data.registered);
     }
 
-    loadData();
+    load();
   }, [eventId]);
 
-  async function handleClick() {
-    if (isBlocked) return;
+  const refreshUI = () => {
+    window.dispatchEvent(new Event("refresh-events"));
+  };
 
+  async function register() {
     setLoading(true);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      alert("Tens de fazer login");
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
-    // REMOVE INSCRIÇÃO
-    if (isRegistered) {
-      const { error } = await supabase
-        .from("event_registrations")
-        .delete()
-        .eq("event_id", eventId)
-        .eq("user_id", user.id);
-
-      if (error) {
-        alert(error.message);
-        setLoading(false);
-        return;
-      }
-
-      await supabase.rpc("decrement_event_count", {
-        event_id_input: eventId,
-      });
-
-      setRegisteredCount((prev) => Math.max(0, prev - 1));
-      setIsRegistered(false);
-
-      setLoading(false);
-      router.refresh();
-      return;
-    }
-
-    // INSCRIÇÃO
-    const { error } = await supabase
-      .from("event_registrations")
-      .insert({
-        event_id: eventId,
-        user_id: user.id,
-      });
-
-    if (error) {
-      alert(error.message);
-      setLoading(false);
-      return;
-    }
-
-    await supabase.rpc("increment_event_count", {
-      event_id_input: eventId,
+    await fetch(`/api/events/${eventId}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id }),
     });
 
-    setRegisteredCount((prev) => prev + 1);
-    setIsRegistered(true);
+    setRegistered(true);
+    onChange?.(true);
 
+    refreshUI();
     setLoading(false);
-    router.refresh();
   }
 
-  // TEXTO DO BOTÃO
-  let text = "";
-  let style = "";
+  async function unregister() {
+    setLoading(true);
 
-  if (isRegistered) {
-    text = loading ? "A remover..." : "Remover inscrição";
-    style =
-      "bg-red-900 text-red-200 hover:bg-red-800";
-  } else if (isBlocked) {
-    text = "Lotação máxima atingida";
-    style =
-      "bg-zinc-700 text-zinc-400 cursor-not-allowed";
-  } else if (loading) {
-    text = "A inscrever...";
-    style =
-      "bg-white text-zinc-900 opacity-70";
-  } else {
-    text = "Inscrever-se";
-    style =
-      "bg-white text-zinc-900 hover:bg-zinc-200";
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await fetch(`/api/events/${eventId}/unregister`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id }),
+    });
+
+    setRegistered(false);
+    onChange?.(false);
+
+    refreshUI();
+    setLoading(false);
   }
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading || isBlocked}
-      className={`
-        px-4 py-2 rounded-lg font-medium transition
-        ${style}
-      `}
-    >
-      {text}
-    </button>
+    <div className="space-y-3">
+      {/* 🔥 BOTÃO INSCRIÇÃO */}
+      <button
+        onClick={registered ? unregister : register}
+        disabled={loading}
+        className={`px-4 py-2 rounded font-medium transition ${
+          registered
+            ? "bg-red-600 text-white hover:bg-red-700"
+            : "bg-white text-black hover:bg-zinc-200"
+        }`}
+      >
+        {loading
+          ? "A processar..."
+          : registered
+          ? "Remover inscrição"
+          : "Inscrever-se"}
+      </button>
+
+      {/* 🔥 QR CODE SÓ SE INSCRITO */}
+      {registered && (
+        <div className="pt-2">
+          <CheckInQRCode eventId={eventId} />
+        </div>
+      )}
+    </div>
   );
 }
