@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import EventCard from "@/components/EventCard";
 
+export const dynamic = "force-dynamic"; // 🔥 IMPORTANTÍSSIMO
+
 export default async function EventsPage() {
   const supabase = createClient();
 
