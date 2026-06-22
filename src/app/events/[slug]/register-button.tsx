@@ -22,7 +22,6 @@ export default function RegisterButton({
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
-  // 🔥 check status
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -46,27 +45,45 @@ export default function RegisterButton({
     window.dispatchEvent(new Event("refresh-events"));
   };
 
-  // ======================
-  // REGISTER (DIRECT DB)
-  // ======================
+  // =========================
+  // REGISTER (DEBUG VERSION)
+  // =========================
   async function register() {
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
 
-    if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+    // ❌ SESSION ERROR
+    if (sessionError) {
+      alert("SESSION ERROR: " + sessionError.message);
       setLoading(false);
       return;
     }
 
-    // 🔥 capacity check (client-side)
+    // ❌ NO SESSION
+    if (!sessionData.session) {
+      alert("NO SESSION — utilizador não autenticado");
+      router.push(
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      );
+      setLoading(false);
+      return;
+    }
+
+    const user = sessionData.session.user;
+
+    // ✔ SESSION OK
+    alert("SESSION OK — user: " + user.id);
+
+    // CAPACITY CHECK
     if (registeredCount >= capacity) {
       alert("Capacidade máxima atingida");
       setLoading(false);
       return;
     }
 
+    // INSERT
     const { error } = await supabase
       .from("event_registrations")
       .insert({
@@ -74,28 +91,36 @@ export default function RegisterButton({
         user_id: user.id,
       });
 
+    // ❌ INSERT ERROR
     if (error) {
-      alert(error.message);
+      alert("INSERT ERROR: " + error.message);
       setLoading(false);
       return;
     }
 
+    // ✔ SUCCESS
+    alert("INSCRIÇÃO FEITA COM SUCESSO");
+
     setRegistered(true);
     onChange?.(true);
     refreshUI();
+
     setLoading(false);
   }
 
-  // ======================
+  // =========================
   // UNREGISTER
-  // ======================
+  // =========================
   async function unregister() {
     setLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      alert("NO SESSION");
+      router.push(
+        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      );
       setLoading(false);
       return;
     }
@@ -107,14 +132,17 @@ export default function RegisterButton({
       .eq("user_id", user.id);
 
     if (error) {
-      alert(error.message);
+      alert("UNREGISTER ERROR: " + error.message);
       setLoading(false);
       return;
     }
 
+    alert("INSCRIÇÃO REMOVIDA");
+
     setRegistered(false);
     onChange?.(false);
     refreshUI();
+
     setLoading(false);
   }
 
@@ -122,7 +150,6 @@ export default function RegisterButton({
 
   return (
     <div className="space-y-3">
-
       {!registered && isFull ? (
         <button disabled className="px-4 py-2 rounded bg-zinc-700 text-zinc-300">
           Capacidade máxima atingida
