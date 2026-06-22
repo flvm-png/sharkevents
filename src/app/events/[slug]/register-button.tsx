@@ -22,21 +22,21 @@ export default function RegisterButton({
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
+  // 🔥 check status
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) return;
 
-      const res = await fetch(
-        `/api/events/${eventId}/status?userId=${user.id}`
-      );
+      const { data } = await supabase
+        .from("event_registrations")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      const data = await res.json();
-
-      setRegistered(!!data.registered);
+      setRegistered(!!data);
     }
 
     load();
@@ -46,33 +46,36 @@ export default function RegisterButton({
     window.dispatchEvent(new Event("refresh-events"));
   };
 
+  // ======================
+  // REGISTER (DIRECT DB)
+  // ======================
   async function register() {
     setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push(
-        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
-      );
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       setLoading(false);
       return;
     }
 
-    const res = await fetch(`/api/events/${eventId}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId: user.id }),
-    });
+    // 🔥 capacity check (client-side)
+    if (registeredCount >= capacity) {
+      alert("Capacidade máxima atingida");
+      setLoading(false);
+      return;
+    }
 
-    const data = await res.json();
+    const { error } = await supabase
+      .from("event_registrations")
+      .insert({
+        event_id: eventId,
+        user_id: user.id,
+      });
 
-    if (!res.ok) {
-      alert(data.error || "Erro ao inscrever");
+    if (error) {
+      alert(error.message);
       setLoading(false);
       return;
     }
@@ -80,36 +83,37 @@ export default function RegisterButton({
     setRegistered(true);
     onChange?.(true);
     refreshUI();
-
     setLoading(false);
   }
 
+  // ======================
+  // UNREGISTER
+  // ======================
   async function unregister() {
     setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push(
-        `/login?redirect=${encodeURIComponent(window.location.pathname)}`
-      );
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
       setLoading(false);
       return;
     }
 
-    await fetch(`/api/events/${eventId}/unregister`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId: user.id }),
-    });
+    const { error } = await supabase
+      .from("event_registrations")
+      .delete()
+      .eq("event_id", eventId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      alert(error.message);
+      setLoading(false);
+      return;
+    }
 
     setRegistered(false);
     onChange?.(false);
-
     refreshUI();
     setLoading(false);
   }
@@ -118,6 +122,7 @@ export default function RegisterButton({
 
   return (
     <div className="space-y-3">
+
       {!registered && isFull ? (
         <button disabled className="px-4 py-2 rounded bg-zinc-700 text-zinc-300">
           Capacidade máxima atingida
