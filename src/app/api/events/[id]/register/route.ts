@@ -1,19 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request, context: any) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { params } = context;
   const { id: eventId } = await params;
+
+  // 🔥 FIX: força sessão via getSession (em vez de getUser)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const user = session?.user;
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
 
   // 1. evento
   const { data: event } = await supabase
@@ -23,7 +31,10 @@ export async function POST(req: Request, context: any) {
     .single();
 
   if (!event) {
-    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Event not found" },
+      { status: 404 }
+    );
   }
 
   // 2. já inscrito
@@ -54,7 +65,7 @@ export async function POST(req: Request, context: any) {
     );
   }
 
-  // 4. insert (AGORA COMPATÍVEL COM RLS)
+  // 4. insert
   const { error } = await supabase
     .from("event_registrations")
     .insert({
