@@ -7,6 +7,9 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "SharkEvents",
   description: "Plataforma de eventos e check-ins",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
