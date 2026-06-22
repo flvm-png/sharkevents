@@ -1,24 +1,29 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request, context: any) {
+  const cookieStore = cookies();
+
   const supabase = createClient();
 
   const { params } = context;
   const { id: eventId } = await params;
 
-  // 🔥 FIX: força sessão via getSession (em vez de getUser)
+  // 🔥 FORÇA AUTH COM COOKIE CONTEXT CORRETO
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-  const user = session?.user;
+  // DEBUG (remove depois)
+  console.log("AUTH:", user, authError);
 
   if (!user) {
     return NextResponse.json(
-      { error: "Unauthorized" },
+      { error: "Unauthorized", debug: authError },
       { status: 401 }
     );
   }
