@@ -1,15 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import EventCard from "@/components/EventCard";
 
-export const dynamic = "force-dynamic"; // 🔥 IMPORTANTÍSSIMO
+export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
   const supabase = createClient();
 
-  const { data: events } = await supabase
+  const { data: events, error } = await supabase
     .from("events")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (error) {
+    console.log("SUPABASE ERROR:", error);
+  }
 
   const { data: registrations } = await supabase
     .from("event_registrations")
