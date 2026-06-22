@@ -142,7 +142,7 @@ export default function DashboardPage() {
                     href={`/api/events/${event.id}/export`}
                     className="px-3 py-2 bg-white text-black rounded-lg hover:bg-zinc-200 transition text-sm"
                   >
-                    Export CSV
+                    Exportar Inscritos (CSV)
                   </a>
                 </div>
 
