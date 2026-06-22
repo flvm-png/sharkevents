@@ -35,7 +35,6 @@ export default function Navbar() {
     router.refresh();
   }
 
-  // helper para active link
   function isActive(path: string) {
     return pathname === path;
   }
@@ -44,27 +43,35 @@ export default function Navbar() {
     `transition ${
       isActive(path)
         ? "text-white font-semibold"
-        : "text-zinc-400 hover:text-white"
+        : "text-zinc-400 hover:text-[#A855F7]"
     }`;
 
   return (
-    <header className="bg-zinc-950 border-b border-white/10">
+    <header
+      className="
+        sticky top-0 z-50
+        backdrop-blur-xl
+        bg-black/20
+        border-b border-white/10
+      "
+    >
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
 
         {/* LOGO */}
-        <Link href="/" className="text-white font-bold text-xl">
+        <Link
+          href="/"
+          className="text-white font-bold text-xl tracking-wide"
+        >
           SharkEvents
         </Link>
 
         {/* NAV */}
-        <nav className="flex items-center gap-5 text-sm">
+        <nav className="flex items-center gap-6 text-sm">
 
-          {/* PUBLIC */}
           <Link href="/events" className={linkClass("/events")}>
             Eventos
           </Link>
 
-          {/* AUTH */}
           {user ? (
             <>
               <Link href="/dashboard" className={linkClass("/dashboard")}>
@@ -77,7 +84,11 @@ export default function Navbar() {
 
               <button
                 onClick={logout}
-                className="text-red-400 hover:text-red-300 transition"
+                className="
+                  text-[#F97316]
+                  hover:text-[#fb923c]
+                  transition
+                "
               >
                 Logout
               </button>
