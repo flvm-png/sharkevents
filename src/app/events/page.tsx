@@ -1,31 +1,37 @@
 import { createClient } from "@/lib/supabase/server";
 import EventCard from "@/components/EventCard";
 
+export const dynamic = "force-dynamic"; // 🔥 força dados sempre atualizados
+export const revalidate = 0; // 🔥 desativa cache do Next
+
 export default async function HomePage() {
   const supabase = createClient();
 
+  // 🔥 eventos sempre fresh
   const { data: events, error: eventsError } = await supabase
     .from("events")
     .select("*")
     .order("created_at", { ascending: false });
 
-  const { data: registrations, error: registrationsError } = await supabase
+  // inscrições (para contagem)
+  const { data: registrations, error: regError } = await supabase
     .from("event_registrations")
     .select("event_id");
 
   if (eventsError) {
-    console.error("Erro a carregar eventos:", eventsError);
+    console.error("Events error:", eventsError);
     return (
       <div className="max-w-4xl mx-auto mt-10 text-red-500">
-        Erro ao carregar eventos.
+        Erro ao carregar eventos
       </div>
     );
   }
 
-  if (registrationsError) {
-    console.error("Erro a carregar inscrições:", registrationsError);
+  if (regError) {
+    console.error("Registrations error:", regError);
   }
 
+  // contador por evento
   const countMap: Record<string, number> = {};
 
   registrations?.forEach((r) => {
