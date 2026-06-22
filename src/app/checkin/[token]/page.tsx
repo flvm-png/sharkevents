@@ -9,18 +9,18 @@ export default async function CheckInPage({
   const supabase = createClient();
   const { token } = await params;
 
-  // 1. procurar inscrição pelo token
-  const { data: reg } = await supabase
+  // 1. find registration
+  const { data: reg, error: findError } = await supabase
     .from("event_registrations")
-    .select("*")
+    .select("id, checked_in")
     .eq("checkin_token", token)
     .single();
 
-  if (!reg) {
+  if (findError || !reg) {
     return notFound();
   }
 
-  // 2. se já fez check-in, não repetir
+  // 2. already checked-in
   if (reg.checked_in) {
     return (
       <div className="text-white p-10">
@@ -29,13 +29,19 @@ export default async function CheckInPage({
     );
   }
 
-  // 3. marcar check-in como feito
-  await supabase
+  // 3. update check-in (IMPORTANT FIX)
+  const { error: updateError } = await supabase
     .from("event_registrations")
-    .update({
-      checked_in: true,
-    })
-    .eq("checkin_token", token);
+    .update({ checked_in: true })
+    .eq("id", reg.id);
+
+  if (updateError) {
+    return (
+      <div className="text-red-500 p-10">
+        ❌ Erro no check-in: {updateError.message}
+      </div>
+    );
+  }
 
   return (
     <div className="text-white p-10">
