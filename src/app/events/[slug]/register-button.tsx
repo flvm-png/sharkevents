@@ -22,6 +22,7 @@ export default function RegisterButton({
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
+  // 🔍 check if user is registered
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -45,25 +46,15 @@ export default function RegisterButton({
     window.dispatchEvent(new Event("refresh-events"));
   };
 
-  // =========================
-  // REGISTER (DEBUG VERSION)
-  // =========================
+  // ======================
+  // REGISTER
+  // ======================
   async function register() {
     setLoading(true);
 
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    // ❌ SESSION ERROR
-    if (sessionError) {
-      alert("SESSION ERROR: " + sessionError.message);
-      setLoading(false);
-      return;
-    }
-
-    // ❌ NO SESSION
-    if (!sessionData.session) {
-      alert("NO SESSION — utilizador não autenticado");
+    if (!session) {
       router.push(
         `/login?redirect=${encodeURIComponent(window.location.pathname)}`
       );
@@ -71,19 +62,13 @@ export default function RegisterButton({
       return;
     }
 
-    const user = sessionData.session.user;
+    const user = session.user;
 
-    // ✔ SESSION OK
-    alert("SESSION OK — user: " + user.id);
-
-    // CAPACITY CHECK
     if (registeredCount >= capacity) {
-      alert("Capacidade máxima atingida");
       setLoading(false);
       return;
     }
 
-    // INSERT
     const { error } = await supabase
       .from("event_registrations")
       .insert({
@@ -91,33 +76,24 @@ export default function RegisterButton({
         user_id: user.id,
       });
 
-    // ❌ INSERT ERROR
-    if (error) {
-      alert("INSERT ERROR: " + error.message);
-      setLoading(false);
-      return;
+    if (!error) {
+      setRegistered(true);
+      onChange?.(true);
+      refreshUI();
     }
-
-    // ✔ SUCCESS
-    alert("INSCRIÇÃO FEITA COM SUCESSO");
-
-    setRegistered(true);
-    onChange?.(true);
-    refreshUI();
 
     setLoading(false);
   }
 
-  // =========================
+  // ======================
   // UNREGISTER
-  // =========================
+  // ======================
   async function unregister() {
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!user) {
-      alert("NO SESSION");
+    if (!session) {
       router.push(
         `/login?redirect=${encodeURIComponent(window.location.pathname)}`
       );
@@ -125,23 +101,19 @@ export default function RegisterButton({
       return;
     }
 
+    const user = session.user;
+
     const { error } = await supabase
       .from("event_registrations")
       .delete()
       .eq("event_id", eventId)
       .eq("user_id", user.id);
 
-    if (error) {
-      alert("UNREGISTER ERROR: " + error.message);
-      setLoading(false);
-      return;
+    if (!error) {
+      setRegistered(false);
+      onChange?.(false);
+      refreshUI();
     }
-
-    alert("INSCRIÇÃO REMOVIDA");
-
-    setRegistered(false);
-    onChange?.(false);
-    refreshUI();
 
     setLoading(false);
   }
@@ -150,8 +122,12 @@ export default function RegisterButton({
 
   return (
     <div className="space-y-3">
+
       {!registered && isFull ? (
-        <button disabled className="px-4 py-2 rounded bg-zinc-700 text-zinc-300">
+        <button
+          disabled
+          className="px-4 py-2 rounded bg-zinc-700 text-zinc-300 cursor-not-allowed"
+        >
           Capacidade máxima atingida
         </button>
       ) : (
