@@ -1,58 +1,73 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { registerSchema } from "@/lib/validators/event";
+import { NextResponse } from "next/server";
 
-export async function POST(req: Request, { params }: any) {
+export async function POST(req: Request, context: any) {
   const supabase = createClient();
+  const { userId } = await req.json();
 
-  // ✅ Next 16 fix
-  const { id } = await params;
+  // ✅ FIX NEXT 15+: params is async
+  const { params } = context;
+  const { id: eventId } = await params;
 
-  let body;
+  // 1. buscar evento
+  const { data: event } = await supabase
+    .from("events")
+    .select("capacity")
+    .eq("id", eventId)
+    .single();
 
-  try {
-    body = await req.json();
-  } catch {
+  if (!event) {
     return NextResponse.json(
-      { error: "Invalid JSON" },
+      { error: "Event not found" },
+      { status: 404 }
+    );
+  }
+
+  // 2. já inscrito?
+  const { data: existing } = await supabase
+    .from("event_registrations")
+    .select("id")
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json(
+      { error: "Already registered" },
       { status: 400 }
     );
   }
 
-  // 🔥 DEBUG (remove depois)
-  console.log("BODY:", body);
+  // 3. count
+  const { count } = await supabase
+    .from("event_registrations")
+    .select("*", { count: "exact", head: true })
+    .eq("event_id", eventId);
 
-  const parsed = registerSchema.safeParse(body);
+  const current = count ?? 0;
 
-  if (!parsed.success) {
+  // 4. capacity check
+  if (current >= event.capacity) {
     return NextResponse.json(
-      {
-        error: "Invalid input",
-        details: parsed.error.flatten(),
-      },
+      { error: "Capacity full" },
       { status: 400 }
     );
   }
 
-  const { userId } = parsed.data;
-
+  // 5. insert
   const { error } = await supabase
     .from("event_registrations")
     .insert({
-      event_id: id,
+      event_id: eventId,
       user_id: userId,
     });
 
   if (error) {
     return NextResponse.json(
       { error: error.message },
-      { status: 400 }
+      { status: 500 }
     );
   }
 
-  return NextResponse.json( 
-
-    { ok: true },
-    { status: 200 }
-  );
+  return NextResponse.json({ success: true });
 }

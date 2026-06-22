@@ -49,7 +49,11 @@ npm -v
 Se aparecer uma versão ≥ 18 → OK.
 
 ❌ Se NÃO tiveres Node.js
+<<<<<<< HEAD
 Instala aqui:👉 https://nodejs.org/
+=======
+Instala aqui:👉 https://nodejs.org/
+>>>>>>> 08a82de (atualização nos eventos, doesn't really update the registered count tho)
 Depois confirma:
 
 node -v
@@ -60,7 +64,11 @@ npm -v
 
 git --version
 
+<<<<<<< HEAD
 Se não existir:👉 https://git-scm.com/downloads
+=======
+Se não existir:👉 https://git-scm.com/downloads
+>>>>>>> 08a82de (atualização nos eventos, doesn't really update the registered count tho)
 
 📥 Passo 2 — Clonar o repositório
 
@@ -88,7 +96,11 @@ Adicionar:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
+<<<<<<< HEAD
 📌 Encontras isto em:Supabase → Project Settings → API
+=======
+📌 Encontras isto em:Supabase → Project Settings → API
+>>>>>>> 08a82de (atualização nos eventos, doesn't really update the registered count tho)
 
 🗄️ Passo 5 — Base de dados (Supabase)
 📌 Tabela: events
