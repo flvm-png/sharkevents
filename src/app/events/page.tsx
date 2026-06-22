@@ -1,14 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import EventCard from "@/components/EventCard";
 
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-export const revalidate = 0;
-
-export default async function HomePage() {
+export default async function EventsPage() {
   const supabase = createClient();
 
-  const { data: events, error } = await supabase
+  const { data: events } = await supabase
     .from("events")
     .select("*")
     .order("created_at", { ascending: false });
@@ -24,7 +20,7 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 space-y-4">
+    <div className="max-w-6xl mx-auto mt-10 space-y-4 px-4">
       {events?.map((event) => (
         <EventCard
           key={event.id}

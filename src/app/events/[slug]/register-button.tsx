@@ -22,7 +22,6 @@ export default function RegisterButton({
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
-  // 🔍 check if user is registered
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -46,9 +45,6 @@ export default function RegisterButton({
     window.dispatchEvent(new Event("refresh-events"));
   };
 
-  // ======================
-  // REGISTER
-  // ======================
   async function register() {
     setLoading(true);
 
@@ -85,9 +81,6 @@ export default function RegisterButton({
     setLoading(false);
   }
 
-  // ======================
-  // UNREGISTER
-  // ======================
   async function unregister() {
     setLoading(true);
 
@@ -126,7 +119,7 @@ export default function RegisterButton({
       {!registered && isFull ? (
         <button
           disabled
-          className="px-4 py-2 rounded bg-zinc-700 text-zinc-300 cursor-not-allowed"
+          className="px-4 py-2 rounded-lg bg-[#16162A] text-[#94A3B8] border border-white/10 cursor-not-allowed"
         >
           Capacidade máxima atingida
         </button>
@@ -134,10 +127,10 @@ export default function RegisterButton({
         <button
           onClick={registered ? unregister : register}
           disabled={loading}
-          className={`px-4 py-2 rounded font-medium transition ${
+          className={`px-4 py-2 rounded-lg font-medium transition ${
             registered
-              ? "bg-red-600 text-white hover:bg-red-700"
-              : "bg-white text-black hover:bg-zinc-200"
+              ? "bg-transparent border border-[#7C3AED] text-[#A855F7] hover:bg-[#16162A]"
+              : "bg-[#7C3AED] hover:bg-[#6D28D9] text-white"
           }`}
         >
           {loading

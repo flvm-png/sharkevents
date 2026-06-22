@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt">
-      <body className="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col">
+      <body className="bg-[#0B0B14] text-[#F8FAFC] min-h-screen flex flex-col">
         
         {/* HEADER */}
         <Navbar />
