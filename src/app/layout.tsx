@@ -8,7 +8,9 @@ export const metadata: Metadata = {
   title: "SharkEvents",
   description: "Plataforma de eventos e check-ins",
   icons: {
-    icon: "/logo.svg",
+    icon: [
+      {url : "/logo.svg"}
+    ],
   },
 };
 
