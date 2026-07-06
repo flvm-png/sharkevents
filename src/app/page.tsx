@@ -5,11 +5,11 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="space-y-4">
         <h1 className="text-4xl font-bold">
-          🦈 SharkEvents
+          🦈 SHARKEvents
         </h1>
 
         <p className="text-zinc-300 text-lg leading-relaxed">
-          A <b>SharkEvents</b> é a plataforma oficial de eventos da comunidade <b>SharkCoders</b> 🚀.  
+          A <b>SHARKEvents</b> é a plataforma oficial de eventos da comunidade <b>SHARKCODERS</b> 🚀.  
           Aqui podes descobrir, participar e gerir eventos ligados à tecnologia, programação e inovação 💻⚡.
           Foi criada para aproximar alunos, professores e a comunidade tech num único espaço digital 🤝.
         </p>
@@ -18,11 +18,11 @@ export default function LandingPage() {
       {/* ABOUT SHARKCODERS */}
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">
-          Sobre a SharkCoders
+          Sobre a SHARKCODERS
         </h2>
 
         <p className="text-zinc-400 leading-relaxed">
-          🦈 <b>SharkCoders</b> é a primeira rede portuguesa de escolas de programação, robótica e tecnologia para crianças e jovens 🚀. 
+          🦈 <b>SHARKCODERS</b> é a primeira rede portuguesa de escolas de programação, robótica e tecnologia para crianças e jovens 🚀. 
           Transformamos alunos em <b>criadores de tecnologia</b>, através de experiências práticas, criativas e divertidas 💡.  
           Trabalhamos programação 💻, criação de jogos 🎮, desenvolvimento de apps 📱, robótica 🤖 e inteligência artificial 🧠, sempre com o objetivo de inspirar uma nova geração a pensar, criar e inovar com tecnologia 🎯.
         </p>
@@ -35,13 +35,13 @@ export default function LandingPage() {
       {/* ABOUT SHARKEVENTS */}
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">
-          Sobre o SharkEvents
+          Sobre o SHARKEvents
         </h2>
 
         <p className="text-zinc-400 leading-relaxed">
-          O <b>SharkEvents</b> permite criar, gerir e participar em eventos com sistema de registo e check-in em tempo real ⚡.  
+          O <b>SHARKEvents</b> permite criar, gerir e participar em eventos com sistema de registo e check-in em tempo real ⚡.  
           Cada evento pode incluir inscrições, controlo de participantes e experiência interativa para toda a comunidade 💻🤝.  
-          O objetivo é tornar a gestão de eventos simples, moderna e escalável, acompanhando o crescimento da SharkCoders 🚀.
+          O objetivo é tornar a gestão de eventos simples, moderna e escalável, acompanhando o crescimento da SHARKCODERS 🚀.
         </p>
       </section>
 

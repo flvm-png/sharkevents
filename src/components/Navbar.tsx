@@ -62,7 +62,7 @@ export default function Navbar() {
           href="/"
           className="text-white font-bold text-xl tracking-wide"
         >
-          SharkEvents
+          SHARKEvents
         </Link>
 
         {/* NAV */}
