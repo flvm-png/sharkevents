@@ -1,193 +1,166 @@
-README.md — SharkEvents
+# SharkEvents
 
-# 🦈 SharkEvents
+Aplicação web para criar e gerir eventos, com inscrições, limite de capacidade e check-in por QR Code.
 
-SharkEvents é uma plataforma de criação e gestão de eventos construída com **Next.js 16**, **Supabase** e **Tailwind CSS**.
+**Demo:** https://sharkevents-ke7h.vercel.app/
 
-Permite criar eventos, inscrever utilizadores, gerir check-ins via QR Code e acompanhar estatísticas em tempo real.
+> **Estado do projeto:** projeto base (starter) de apoio a professores no curso *Code Teens Web Development Genius*. Não está em produção e não tem utilizadores reais.
 
----
-
-## 🚀 Funcionalidades
-
-- Autenticação (Supabase Auth)
-- Criação de eventos
-- Sistema de inscrições
-- Limite de capacidade por evento
-- Dashboard de organizador
-- Lista de inscritos
-- Check-in via QR Code
-- Estatísticas básicas por evento
-- Atualização dinâmica de inscrições
+<!-- Adicionar aqui 2 a 3 screenshots: lista de eventos, página do evento com QR Code, dashboard do organizador. -->
 
 ---
 
-## 🧰 Stack Tecnológico
+## Funcionalidades
 
-- Next.js (App Router)
-- React 18
-- TypeScript
-- Supabase (Auth + Database)
-- Tailwind CSS
+**Para participantes**
+- Registo e login com email e password (Supabase Auth)
+- Lista de eventos e página de detalhe por `slug`
+- Inscrição e remoção de inscrição, com indicação de lugares ocupados e capacidade máxima
+- QR Code pessoal de check-in, gerado depois da inscrição
+- Dashboard com os eventos em que estou inscrito
+
+**Para organizadores**
+- Criação de eventos (título, descrição, data, local e capacidade)
+- Dashboard com estatísticas por evento: inscritos, check-ins e capacidade
+- Página de detalhe com a lista de inscritos e estado do check-in
+- Exportação da lista de inscritos em CSV
+- Eliminação de eventos
+
+**Check-in**
+- O QR Code abre `/checkin/[token]`, que marca a inscrição como `checked_in`
+- Alternativa manual em `/checkin`, onde se cola o token e se confirma o check-in
 
 ---
 
-# 📥 1. Instalação completa (Windows / macOS / Linux)
+## Stack
 
-## 🔧 Passo 1 — Instalar dependências obrigatórias
+| Área | Tecnologia |
+| --- | --- |
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, Tailwind CSS 4 |
+| Linguagem | TypeScript |
+| Backend | Supabase (Auth + PostgreSQL) via `@supabase/ssr` |
+| QR Code | `react-qr-code` |
+| Validação | Zod |
+| Deploy | Vercel |
 
-### 🟢 Instalar Node.js
+---
 
-O projeto requer **Node.js 18+**
+## Estrutura
 
-### ✔ Verificar se já tens instalado:
+```
+src/
+├── app/
+│   ├── events/            # lista e página de evento (/events, /events/[slug])
+│   ├── create/            # criação de eventos
+│   ├── dashboard/         # área do utilizador e do organizador
+│   ├── checkin/           # check-in manual e por token (/checkin/[token])
+│   ├── login/ register/   # autenticação
+│   └── api/               # rotas de API (export CSV, entre outras)
+├── components/            # Navbar, EventCard, EventAdminCard, ui/
+├── hooks/                 # hooks de realtime (ainda não ligados à UI)
+├── lib/supabase/          # clientes Supabase (browser e servidor)
+└── types/
+middleware.ts              # refresca a sessão do Supabase
+```
+
+---
+
+## Como correr localmente
+
+### Requisitos
+- Node.js 20.9 ou superior
+- Uma conta e um projeto no [Supabase](https://supabase.com)
+
+### Passos
 
 ```bash
-node -v
-npm -v
-
-Se aparecer uma versão ≥ 18 → OK.
-
-❌ Se NÃO tiveres Node.js
-<<<<<<< HEAD
-Instala aqui:👉 https://nodejs.org/
-=======
-Instala aqui:👉 https://nodejs.org/
->>>>>>> 08a82de (atualização nos eventos, doesn't really update the registered count tho)
-Depois confirma:
-
-node -v
-npm -v
-
-
-🧩 (Opcional) Instalar Git
-
-git --version
-
-<<<<<<< HEAD
-Se não existir:👉 https://git-scm.com/downloads
-=======
-Se não existir:👉 https://git-scm.com/downloads
->>>>>>> 08a82de (atualização nos eventos, doesn't really update the registered count tho)
-
-📥 Passo 2 — Clonar o repositório
-
 git clone https://github.com/flvm-png/sharkevents.git
 cd sharkevents
-
-
-📦 Passo 3 — Instalar dependências
-npm:
-
 npm install
+```
 
-ou pnpm:
+Cria o ficheiro `.env.local` na raiz:
 
-pnpm install
+```env
+NEXT_PUBLIC_SUPABASE_URL=o_teu_url_do_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=a_tua_chave_anon
+```
 
+Ambos os valores estão em *Supabase → Project Settings → API*. Nunca uses a chave `service_role` nestas variáveis e nunca faças commit do `.env.local`.
 
-🔐 Passo 4 — Configurar variáveis de ambiente
-Criar ficheiro .env.local na raiz:
-
-touch .env.local
-
-Adicionar:
-
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-<<<<<<< HEAD
-📌 Encontras isto em:Supabase → Project Settings → API
-=======
-📌 Encontras isto em:Supabase → Project Settings → API
->>>>>>> 08a82de (atualização nos eventos, doesn't really update the registered count tho)
-
-🗄️ Passo 5 — Base de dados (Supabase)
-📌 Tabela: events
-
-id uuid primary key
-title text
-description text
-location text
-date timestamp
-slug text
-capacity int4
-organizer_id uuid
-created_at timestamp
-
-
-📌 Tabela: event_registrations
-
-id uuid primary key default gen_random_uuid()
-event_id uuid
-user_id uuid
-checked_in boolean default false
-created_at timestamp
-
-
-▶️ Passo 6 — Correr o projeto
-
+```bash
 npm run dev
+```
 
-ou
+Abre http://localhost:3000.
 
-pnpm dev
+Outros comandos: `npm run build`, `npm run start`, `npm run lint`.
 
+---
 
-🌐 Passo 7 — Abrir no browser
+## Base de dados (Supabase)
 
-http://localhost:3000
+O código espera as seguintes tabelas e funções.
 
+### `events`
 
-🧠 Fluxo da aplicação
-👤 Utilizador normal
-	•	Regista-se / faz login
-	•	Vê lista de eventos
-	•	Inscreve-se em eventos
-	•	Pode fazer check-in via QR code
+| Coluna | Tipo |
+| --- | --- |
+| `id` | uuid (PK) |
+| `title` | text |
+| `description` | text |
+| `location` | text |
+| `date` | timestamp |
+| `slug` | text |
+| `capacity` | int |
+| `organizer_id` | uuid (utilizador que criou o evento) |
+| `created_at` | timestamp |
 
-🎟️ Eventos
-	•	Têm capacidade máxima
-	•	Mostram número de inscritos
-	•	Mostram estado do evento
-	•	Permitem check-in
+### `event_registrations`
 
-🧑‍💼 Organizador
-	•	Cria eventos
-	•	Acede ao dashboard
-	•	Vê inscritos por evento
-	•	Vê check-ins em tempo real
-	•	Estatísticas básicas
+| Coluna | Tipo |
+| --- | --- |
+| `id` | uuid (PK, `gen_random_uuid()`) |
+| `event_id` | uuid (FK para `events`) |
+| `user_id` | uuid (FK para `auth.users`) |
+| `checked_in` | boolean (default `false`) |
+| `checkin_token` | text/uuid (token usado no QR Code) |
+| `created_at` | timestamp |
 
-📱 Sistema de QR Code
-	•	Utilizador gera QR após inscrição
-	•	QR é escaneado no evento
-	•	Campo checked_in é atualizado para true
-	•	Entrada é validada automaticamente
+### Funções (RPC)
 
-🧪 Problemas comuns
-❌ "not authenticated"
-	•	Verificar .env.local
-	•	Confirmar login no browser
+- `checkin_event(token_input)`: valida o token e marca o check-in
+- `get_event_export(event_uuid)`: devolve `email` e `created_at` dos inscritos, usada no CSV
 
-❌ Erros de cookies / dashboard vazio
+### Row Level Security
 
-rm -rf .next
-npm run dev
+A aplicação acede ao Supabase diretamente a partir do browser com a chave `anon`, por isso **o RLS tem de estar ativo em todas as tabelas**. As políticas devem garantir, no mínimo, que:
+- qualquer pessoa autenticada pode ler eventos;
+- só o organizador pode editar ou eliminar o seu evento;
+- cada utilizador só pode criar e apagar as suas próprias inscrições;
+- só o organizador vê as inscrições do seu evento e pode exportá-las;
+- o check-in só pode ser feito pelo organizador do evento.
 
+<!-- Adicionar o SQL das tabelas, funções e políticas em supabase/migrations/ e ligar aqui. -->
 
-❌ Eventos não aparecem
-	•	Verificar se organizer_id está correto
-	•	Confirmar inserts no Supabase
+---
 
-📌 Roadmap
-	•	Dashboard com gráficos
-	•	Export CSV de inscritos
-	•	Notificações em tempo real
-	•	Perfis de utilizador
-	•	Mobile UI otimizada
-	•	Scanner QR em tempo real
+## Limitações conhecidas e próximos passos
 
-👨‍💻 Autor
-Projeto desenvolvido por SharkEvents
+- **Capacidade:** o limite é verificado no cliente. O ideal é impô-lo na base de dados (função ou trigger), para evitar excesso de inscrições em pedidos simultâneos.
+- **Check-in:** a página `/checkin/[token]` faz a alteração ao ser aberta; deve passar a pedir confirmação e a validar que quem o faz é organizador.
+- **Código do servidor:** o helper `lib/supabase/server.ts` não lê a sessão a partir dos cookies, pelo que as rotas de API e Server Actions não reconhecem o utilizador. A interface não depende delas (exceto o export CSV), mas devem ser corrigidas ou removidas.
+- **Tempo real:** existem hooks de realtime, mas ainda não estão ligados à interface nem às tabelas atuais.
+- **Lista de inscritos:** mostra o identificador do utilizador em vez do nome ou email.
+- Testes automáticos, integração contínua (lint, typecheck e build) e validação de formulários com Zod ainda por implementar.
 
+---
+
+## Como foi desenvolvido
+
+A base inicial do projeto foi gerada com apoio de IA (Claude). A integração com o Supabase, o fluxo de inscrições e check-in, o dashboard e as melhorias seguintes foram desenvolvidos e ajustados por mim.
+
+## Autor
+
+Nuno Bastos — [GitHub](https://github.com/flvm-png) · [LinkedIn](https://www.linkedin.com/in/nuno-bastos-795b69270)
