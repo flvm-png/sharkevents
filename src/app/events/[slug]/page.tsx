@@ -2,10 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import EventClient from "../../dashboard/events/[id]/EventClient";
 
-export default async function EventPage({ params }: any) {
+export default async function EventPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: event } = await supabase
     .from("events")

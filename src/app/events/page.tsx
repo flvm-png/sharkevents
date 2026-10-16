@@ -4,7 +4,7 @@ import EventCard from "@/components/EventCard";
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: events, error } = await supabase
     .from("events")
@@ -12,7 +12,7 @@ export default async function EventsPage() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.log("SUPABASE ERROR:", error);
+    console.error("Erro ao carregar eventos:", error.message);
   }
 
   const { data: registrations } = await supabase

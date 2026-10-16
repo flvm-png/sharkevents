@@ -6,7 +6,7 @@ export default async function CheckInPage({
 }: {
   params: Promise<{ token: string }>;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { token } = await params;
 
   // 1. find registration

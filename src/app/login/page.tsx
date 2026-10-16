@@ -27,7 +27,12 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // Volta à página de onde veio (ex.: /events/meu-evento), se existir
+    // um destino seguro (caminho interno) no parâmetro ?redirect=.
+    const redirect = new URLSearchParams(window.location.search).get("redirect");
+    const isSafe = redirect && redirect.startsWith("/") && !redirect.startsWith("//");
+
+    router.push(isSafe ? redirect : "/dashboard");
     router.refresh();
   }
 

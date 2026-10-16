@@ -29,7 +29,6 @@ export default function DeleteEventButton({
       .eq("event_id", eventId);
 
     if (regError) {
-      console.log("REG ERROR:", regError);
       alert(regError.message);
       setLoading(false);
       return;
@@ -42,7 +41,6 @@ export default function DeleteEventButton({
       .eq("id", eventId);
 
     if (error) {
-      console.log("EVENT DELETE ERROR:", error);
       alert(error.message);
       setLoading(false);
       return;
