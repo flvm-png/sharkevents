@@ -47,14 +47,7 @@ export default function Navbar() {
     }`;
 
   return (
-    <header
-      className="
-        sticky top-0 z-50
-        backdrop-blur-xl
-        bg-black/20
-        border-b border-white/10
-      "
-    >
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
 
         {/* LOGO */}
