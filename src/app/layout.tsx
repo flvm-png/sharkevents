@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "SharkEvents",
+  title: "SHARKEvents",
   description: "Plataforma de eventos e check-ins",
   icons: {
     icon: [
